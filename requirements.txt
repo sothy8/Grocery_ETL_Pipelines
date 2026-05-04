@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+requests
+pandas
+numpy
+pyarrow
+pyspark
+kafka-python
+sqlalchemy
+psycopg2-binary
+scikit-learn
+joblib
+streamlit
+plotly
+matplotlib
+seaborn
+python-dotenv

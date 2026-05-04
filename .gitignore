@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.env
+models/
+data/bronze/
+data/silver/
+data/gold/
+checkpoints/
+logs/
+.DS_Store
