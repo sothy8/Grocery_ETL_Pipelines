@@ -19,7 +19,10 @@ SPARK_KAFKA_PACKAGE = "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.8"
 
 def run_command(command: list[str], env: dict[str, str] | None = None) -> None:
     print(f"\n>> Running: {' '.join(command)}")
-    subprocess.run(command, check=True, env=env)
+    try:
+        subprocess.run(command, check=True, env=env)
+    except KeyboardInterrupt:
+        raise
 
 
 def start_source_api(env: dict[str, str]) -> subprocess.Popen:
@@ -248,12 +251,15 @@ def main() -> None:
 
         else:
             # Batch pipeline (existing behavior)
-            run_command([python_executable, "-m", "src.ingest.kafka_producer"], env=env)
-            run_command([str(spark_submit), "src/etl/batch_to_bronze.py"], env=env)
-            run_command([str(spark_submit), "src/etl/silver_gold.py"], env=env)
-            run_command([python_executable, "-m", "src.training.train_model"], env=env)
-            run_command([python_executable, "-m", "src.warehouse.load_gold_to_postgres"], env=env)
-            print("\nAll pipeline steps completed.")
+            try:
+                run_command([python_executable, "-m", "src.ingest.kafka_producer"], env=env)
+                run_command([str(spark_submit), "src/etl/batch_to_bronze.py"], env=env)
+                run_command([str(spark_submit), "src/etl/silver_gold.py"], env=env)
+                run_command([python_executable, "-m", "src.training.train_model"], env=env)
+                run_command([python_executable, "-m", "src.warehouse.load_gold_to_postgres"], env=env)
+                print("\nAll pipeline steps completed.")
+            except KeyboardInterrupt:
+                print("\nPipeline interrupted.")
 
             if args.servers and server_procs:
                 print("\nServers are still running. Press Ctrl+C to stop the backend and frontend.")
@@ -277,4 +283,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nInterrupted.")
+        sys.exit(0)
